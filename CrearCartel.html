@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Carteles de Oferta</title>
+    <script src="https://serratus.github.io/quaggaJS/examples/js/quagga.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        .formulario { max-width: 300px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
+        .error { color: red; font-size: 12px; }
+        .hoja-a4 { 
+            display: none;
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: auto;
+            padding: 10mm;
+            box-sizing: border-box;
+            position: relative;
+            border: 1px solid black;
+        }
+        .oferta {
+            width: calc(100%);
+            height: calc(50% - 20mm);
+            margin: 10mm auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 10px double black;
+            position: relative;
+        }
+        .titulo {
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: black;
+            text-align: center;
+            position: absolute;
+            top: -3.35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 15px;
+            border-top-color: white;
+            border-right: 3px solid black;
+            border-left: 3px solid black;
+            border-bottom: 3px solid black;
+        }
+        .producto {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 45px;
+            margin-top: 50px;
+            font-weight: bold;
+            text-align: center; }
+        .subtitulo {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 30px;
+            font-style: italic;
+            text-align: center; }
+        .precio {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 130px;
+            font-weight: bold;
+            text-align: center; }
+
+        .codigo-producto {
+            display: flex;
+            width: 100%;
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+        .precioAnterior {
+            font-size: 30px;
+            display: block;
+            position: absolute;
+            left: 0;
+            bottom:30%;
+            padding: 0px 30px;
+            box-sizing: border-box;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            .hoja-a4, .hoja-a4 * { visibility: visible; }
+            .hoja-a4 { position: absolute; left: 0; top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="formulario" class="formulario">
+        <input type="text" id="nombre" placeholder="Nombre del producto">
+        <span class="error" id="error-nombre"></span>
+        <input type="text" id="subtitulo" placeholder="Subtítulo">
+        <span class="error" id="error-subtitulo"></span>
+        <input type="text" id="codigo" placeholder="Código de barras">
+        <button onclick="abrirScanner()">Escanear Código</button>
+        <span class="error" id="error-codigo"></span>
+        <input type="number" id="precioActual" placeholder="Precio actual">
+        <span class="error" id="error-precioActual"></span>
+        <input type="number" id="precioAnterior" placeholder="Precio anterior">
+        <span class="error" id="error-precioAnterior"></span>
+        <button onclick="crearOferta()">Crear</button>
+    </div>
+
+    <div id="hoja-a4" class="hoja-a4">
+        <div class="oferta" id="oferta"></div>
+        <div class="oferta" id="oferta-duplicada" style="margin-top: 25mm;"></div>
+    </div>
+
+    <div class="acciones" id="acciones" style="display: none;">
+        <button onclick="descargarPDF()">Descargar PDF</button>
+        <button onclick="imprimirOferta()">Imprimir</button>
+    </div>
+
+    <script>
+        function validarFormulario() {
+            let esValido = true;
+            const campos = ["nombre", "subtitulo", "codigo", "precioActual", "precioAnterior"];
+            
+            campos.forEach(campo => {
+                let valor = document.getElementById(campo).value.trim();
+                let errorSpan = document.getElementById(`error-${campo}`);
+                
+                if (!valor) {
+                    errorSpan.textContent = "Este campo es obligatorio";
+                    esValido = false;
+                } else {
+                    errorSpan.textContent = "";
+                }
+            });
+            return esValido;
+        }
+        
+        function crearOferta() {
+            if (!validarFormulario()) return;
+            
+            const nombre = document.getElementById("nombre").value;
+            const subtitulo = document.getElementById("subtitulo").value;
+            const codigo = document.getElementById("codigo").value;
+            const precioActual = document.getElementById("precioActual").value;
+            const precioAnterior = document.getElementById("precioAnterior").value;
+            
+            const ofertaHTML = `
+                <div class="titulo">OFERTA</div>
+                <div class="producto">${nombre}</div>
+                <div class="subtitulo">${subtitulo}</div>
+                <div class="precio">$${precioActual}</div>
+                <div class="codigo-producto">Código: ${codigo}</div>
+                <div class="precioAnterior"> Antes: <br>$<s>${precioAnterior}</s></div>
+            `;
+            
+            document.getElementById("oferta").innerHTML = ofertaHTML;
+            document.getElementById("oferta-duplicada").innerHTML = ofertaHTML;
+            document.getElementById("formulario").style.display = "none";
+            document.getElementById("hoja-a4").style.display = "block";
+            document.getElementById("acciones").style.display = "block";
+        }
+        
+        function imprimirOferta() {
+            window.print();
+        }
+
+        function descargarPDF() {
+            alert("Funcionalidad de descarga de PDF aún por implementar.");
+        }
+    </script>
+</body>
+</html>
