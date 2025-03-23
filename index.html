@@ -118,6 +118,35 @@
     </div>
 
     <script>
+        function abrirScanner() {
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // Usa la cámara trasera
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader"] // Admite códigos de barras tipo EAN
+                }
+            }, function (err) {
+                if (err) {
+                    console.error("Error al iniciar QuaggaJS:", err);
+                    return;
+                }
+                Quagga.start();
+            });
+
+            // Evento cuando se detecta un código de barras
+            Quagga.onDetected(function (result) {
+                let codigoDetectado = result.codeResult.code;
+                document.getElementById("codigo").value = codigoDetectado; // Inserta el código en el campo
+                Quagga.stop(); // Detiene la cámara
+                alert("Código detectado: " + codigoDetectado);
+            });
+        }
         function validarFormulario() {
             let esValido = true;
             const campos = ["nombre", "subtitulo", "codigo", "precioActual", "precioAnterior"];
