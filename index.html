@@ -50,21 +50,27 @@
             border-bottom: 3px solid black;
         }
         .producto {
+            width: 90%;
+            white-space: nowrap;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             font-size: 45px;
             margin-top: 50px;
             font-weight: bold;
             text-align: center; }
         .subtitulo {
+            width: 90%;
+            white-space: nowrap;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             font-size: 30px;
             font-style: italic;
             text-align: center; }
         .precio {
+            white-space: nowrap;
+            width: 70%;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            font-size: 130px;
             font-weight: bold;
-            text-align: center; }
+            text-align: center;
+            display: block;}
 
         .codigo-producto {
             display: flex;
@@ -76,13 +82,20 @@
             box-sizing: border-box;
         }
         .precioAnterior {
+            rotate: -45deg;
+            text-align: center;
+            width: 15%;
             font-size: 30px;
             display: block;
             position: absolute;
-            left: 0;
-            bottom:30%;
-            padding: 0px 30px;
+            left: 2%;
+            top:10%;
             box-sizing: border-box;
+        }
+        .pa {
+            width: 100%;
+            white-space: nowrap;
+            display: block;
         }
         @media print {
             body * { visibility: hidden; }
@@ -98,7 +111,6 @@
         <input type="text" id="subtitulo" placeholder="Subtítulo">
         <span class="error" id="error-subtitulo"></span>
         <input type="text" id="codigo" placeholder="Código de barras">
-        <button onclick="abrirScanner()">Escanear Código</button>
         <span class="error" id="error-codigo"></span>
         <input type="number" id="precioActual" placeholder="Precio actual">
         <span class="error" id="error-precioActual"></span>
@@ -113,57 +125,27 @@
     </div>
 
     <div class="acciones" id="acciones" style="display: none;">
-        <button onclick="descargarPDF()">Descargar PDF</button>
         <button onclick="imprimirOferta()">Imprimir</button>
     </div>
 
-    <div id="escanner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center;">
-        <div style="position: relative; width: 80%; max-width: 600px;">
-            <video id="video-preview" style="width: 100%; border: 2px solid white;"></video>
-            <button onclick="cerrarScanner()" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 10px; cursor: pointer;">Cerrar</button>
-        </div>
-    </div>
-
     <script>
-        function abrirScanner() {
-            // Muestra la interfaz del escáner
-            document.getElementById("escanner").style.display = "flex";
+        const fuenteSize = {
+        titulo: 60,
+        producto: 45,
+        subtitulo: 30,
+        precio: 130,
+        pa: 30};
+        const textoDinamico = ['.producto', '.subtitulo', '.precio', '.pa'];
 
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector("#video-preview"),
-                    constraints: {
-                        facingMode: "environment" // Cámara trasera
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader", "code_128_reader", "upc_reader"] // Tipos de códigos de barras soportados
-                }
-            }, function (err) {
-                if (err) {
-                    console.error("Error al iniciar QuaggaJS:", err);
-                    alert("No se pudo acceder a la cámara.");
-                    cerrarScanner();
-                    return;
-                }
-                Quagga.start();
-            });
+        function adjustFontSize(element) {
+        let fontSize = fuenteSize[element.className]; // Initial font size
+        element.style.fontSize = fontSize + 'px';
+        while (element.scrollWidth > element.clientWidth) {
+            fontSize--;
+            element.style.fontSize = fontSize + 'px';
+        }}
 
-            Quagga.onDetected(function (result) {
-                let codigoDetectado = result.codeResult.code;
-                document.getElementById("codigo").value = codigoDetectado; // Inserta el código escaneado
-                alert("Código detectado: " + codigoDetectado);
-                cerrarScanner();
-            });
-        }
-
-        function cerrarScanner() {
-            Quagga.stop();
-            document.getElementById("escanner").style.display = "none";
-        }
-
+        
         function validarFormulario() {
             let esValido = true;
             const campos = ["nombre", "subtitulo", "codigo", "precioActual", "precioAnterior"];
@@ -197,7 +179,7 @@
                 <div class="subtitulo">${subtitulo}</div>
                 <div class="precio">$${precioActual}</div>
                 <div class="codigo-producto">Código: ${codigo}</div>
-                <div class="precioAnterior"> Antes: <br>$<s>${precioAnterior}</s></div>
+                <div class="precioAnterior"> Antes:<span class="pa">$<s>${precioAnterior}</s></span></div>
             `;
             
             document.getElementById("oferta").innerHTML = ofertaHTML;
@@ -205,14 +187,11 @@
             document.getElementById("formulario").style.display = "none";
             document.getElementById("hoja-a4").style.display = "block";
             document.getElementById("acciones").style.display = "block";
+            document.querySelectorAll(textoDinamico).forEach(adjustFontSize);
         }
         
         function imprimirOferta() {
             window.print();
-        }
-
-        function descargarPDF() {
-            alert("Funcionalidad de descarga de PDF aún por implementar.");
         }
     </script>
 </body>
