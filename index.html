@@ -7,8 +7,10 @@
     <script src="https://serratus.github.io/quaggaJS/examples/js/quagga.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        .formulario { max-width: 300px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
+        .formulario { max-width: 400px; margin: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px; }
         .error { color: red; font-size: 12px; }
+        .selector { margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px; }
+        .selector label { margin-right: 15px; }
         .hoja-a4 { 
             display: none;
             width: 210mm;
@@ -56,22 +58,24 @@
             font-size: 45px;
             margin-top: 50px;
             font-weight: bold;
-            text-align: center; }
+            text-align: center; 
+        }
         .subtitulo {
             width: 90%;
             white-space: nowrap;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             font-size: 30px;
             font-style: italic;
-            text-align: center; }
+            text-align: center; 
+        }
         .precio {
             white-space: nowrap;
             width: 70%;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             font-weight: bold;
             text-align: center;
-            display: block;}
-
+            display: block;
+        }
         .codigo-producto {
             display: flex;
             width: 100%;
@@ -97,6 +101,41 @@
             white-space: nowrap;
             display: block;
         }
+        .promoInfo {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 35px;
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .acciones {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .campos-adicionales {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+        h3 {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            color: #333;
+        }
         @media print {
             body * { visibility: hidden; }
             .hoja-a4, .hoja-a4 * { visibility: visible; }
@@ -105,54 +144,176 @@
     </style>
 </head>
 <body>
-    <div id="formulario" class="formulario">
-        <input type="text" id="nombre" placeholder="Nombre del producto">
-        <span class="error" id="error-nombre"></span>
-        <input type="text" id="subtitulo" placeholder="Subtítulo">
-        <span class="error" id="error-subtitulo"></span>
-        <input type="text" id="codigo" placeholder="Código de barras">
-        <span class="error" id="error-codigo"></span>
-        <input type="number" id="precioActual" placeholder="Precio actual">
-        <span class="error" id="error-precioActual"></span>
-        <input type="number" id="precioAnterior" placeholder="Precio anterior">
-        <span class="error" id="error-precioAnterior"></span>
-        <button onclick="crearOferta()">Crear</button>
+    <h1>Generador de Carteles de Oferta</h1>
+    
+    <div class="selector">
+        <h3>Configuración del cartel:</h3>
+        <div>
+            <label>
+                <input type="radio" name="modo" value="mismo" checked onchange="cambiarModo()"> 
+                Mismo producto en ambos carteles
+            </label>
+            <label>
+                <input type="radio" name="modo" value="diferente" onchange="cambiarModo()"> 
+                Productos diferentes
+            </label>
+        </div>
+    </div>
+
+    <div id="formulario-container">
+        <div id="formulario1" class="formulario">
+            <h3>Cartel Superior</h3>
+            <select id="tipoCartel1" onchange="cambiarTipoCartel(1)">
+                <option value="oferta">Oferta Simple</option>
+                <option value="2x1">Promoción 2x1</option>
+                <option value="mayorista">Promo Mayorista</option>
+            </select>
+            <input type="text" id="nombre1" placeholder="Nombre del producto">
+            <span class="error" id="error-nombre1"></span>
+            <input type="text" id="subtitulo1" placeholder="Subtítulo">
+            <span class="error" id="error-subtitulo1"></span>
+            <input type="text" id="codigo1" placeholder="Código de barras">
+            <span class="error" id="error-codigo1"></span>
+            <input type="number" id="precioActual1" placeholder="Precio actual">
+            <span class="error" id="error-precioActual1"></span>
+            <input type="number" id="precioAnterior1" placeholder="Precio anterior">
+            <span class="error" id="error-precioAnterior1"></span>
+            
+            <div id="campos-adicionales1" class="campos-adicionales" style="display: none;">
+                <!-- Campos para 2x1 -->
+                <div id="campos-2x1-1" style="display: none;">
+                    <p>Promoción 2x1 - No se requieren campos adicionales</p>
+                </div>
+                
+                <!-- Campos para Promo Mayorista -->
+                <div id="campos-mayorista-1" style="display: none;">
+                    <input type="number" id="cantidadMinima1" placeholder="Cantidad mínima para descuento">
+                    <span class="error" id="error-cantidadMinima1"></span>
+                    <input type="number" id="precioMayorista1" placeholder="Precio mayorista">
+                    <span class="error" id="error-precioMayorista1"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="formulario2" class="formulario" style="display: none;">
+            <h3>Cartel Inferior</h3>
+            <select id="tipoCartel2" onchange="cambiarTipoCartel(2)">
+                <option value="oferta">Oferta Simple</option>
+                <option value="2x1">Promoción 2x1</option>
+                <option value="mayorista">Promo Mayorista</option>
+            </select>
+            <input type="text" id="nombre2" placeholder="Nombre del producto">
+            <span class="error" id="error-nombre2"></span>
+            <input type="text" id="subtitulo2" placeholder="Subtítulo">
+            <span class="error" id="error-subtitulo2"></span>
+            <input type="text" id="codigo2" placeholder="Código de barras">
+            <span class="error" id="error-codigo2"></span>
+            <input type="number" id="precioActual2" placeholder="Precio actual">
+            <span class="error" id="error-precioActual2"></span>
+            <input type="number" id="precioAnterior2" placeholder="Precio anterior">
+            <span class="error" id="error-precioAnterior2"></span>
+            
+            <div id="campos-adicionales2" class="campos-adicionales" style="display: none;">
+                <!-- Campos para 2x1 -->
+                <div id="campos-2x1-2" style="display: none;">
+                    <p>Promoción 2x1 - No se requieren campos adicionales</p>
+                </div>
+                
+                <!-- Campos para Promo Mayorista -->
+                <div id="campos-mayorista-2" style="display: none;">
+                    <input type="number" id="cantidadMinima2" placeholder="Cantidad mínima para descuento">
+                    <span class="error" id="error-cantidadMinima2"></span>
+                    <input type="number" id="precioMayorista2" placeholder="Precio mayorista">
+                    <span class="error" id="error-precioMayorista2"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="acciones">
+            <button onclick="crearOferta()">Crear Carteles</button>
+        </div>
     </div>
 
     <div id="hoja-a4" class="hoja-a4">
-        <div class="oferta" id="oferta"></div>
-        <div class="oferta" id="oferta-duplicada" style="margin-top: 25mm;"></div>
+        <div class="oferta" id="oferta1"></div>
+        <div class="oferta" id="oferta2" style="margin-top: 25mm;"></div>
     </div>
 
-    <div class="acciones" id="acciones" style="display: none;">
+    <div class="acciones" id="acciones-post" style="display: none;">
         <button onclick="imprimirOferta()">Imprimir</button>
+        <button onclick="editarCartelSuperior()">Editar Cartel Superior</button>
+        <button onclick="editarCartelInferior()">Editar Cartel Inferior</button>
+        <button onclick="volverAlFormulario()">Volver al Formulario</button>
     </div>
 
     <script>
         const fuenteSize = {
-        titulo: 60,
-        producto: 45,
-        subtitulo: 30,
-        precio: 130,
-        pa: 30};
-        const textoDinamico = ['.producto', '.subtitulo', '.precio', '.pa'];
-
-        function adjustFontSize(element) {
-        let fontSize = fuenteSize[element.className]; // Initial font size
-        element.style.fontSize = fontSize + 'px';
-        while (element.scrollWidth > element.clientWidth) {
-            fontSize--;
-            element.style.fontSize = fontSize + 'px';
-        }}
-
+            titulo: 60,
+            producto: 45,
+            subtitulo: 30,
+            precio: 130,
+            pa: 30,
+            promoInfo: 35
+        };
         
-        function validarFormulario() {
+        const textoDinamico = ['.producto', '.subtitulo', '.precio', '.pa', '.promoInfo'];
+        let modoActual = "mismo";
+        
+        function adjustFontSize(element) {
+            let fontSize = fuenteSize[element.className];
+            element.style.fontSize = fontSize + 'px';
+            while (element.scrollWidth > element.clientWidth) {
+                fontSize--;
+                element.style.fontSize = fontSize + 'px';
+            }
+        }
+        
+        function cambiarModo() {
+            modoActual = document.querySelector('input[name="modo"]:checked').value;
+            if (modoActual === "mismo") {
+                document.getElementById("formulario2").style.display = "none";
+            } else {
+                document.getElementById("formulario2").style.display = "flex";
+            }
+        }
+        
+        function cambiarTipoCartel(numero) {
+            const tipoCartel = document.getElementById(`tipoCartel${numero}`).value;
+            const camposAdicionales = document.getElementById(`campos-adicionales${numero}`);
+            const camposMayorista = document.getElementById(`campos-mayorista-${numero}`);
+            const campos2x1 = document.getElementById(`campos-2x1-${numero}`);
+            
+            // Ocultar todos primero
+            camposAdicionales.style.display = "none";
+            camposMayorista.style.display = "none";
+            campos2x1.style.display = "none";
+            
+            // Mostrar según el tipo seleccionado
+            if (tipoCartel === "mayorista") {
+                camposAdicionales.style.display = "block";
+                camposMayorista.style.display = "block";
+            } else if (tipoCartel === "2x1") {
+                camposAdicionales.style.display = "block";
+                campos2x1.style.display = "block";
+            }
+        }
+        
+        function validarFormulario(numero) {
             let esValido = true;
+            const tipoCartel = document.getElementById(`tipoCartel${numero}`).value;
             const campos = ["nombre", "subtitulo", "codigo", "precioActual", "precioAnterior"];
             
+            // Añadir campos adicionales según el tipo de cartel
+            if (tipoCartel === "mayorista") {
+                campos.push("cantidadMinima", "precioMayorista");
+            }
+            
             campos.forEach(campo => {
-                let valor = document.getElementById(campo).value.trim();
-                let errorSpan = document.getElementById(`error-${campo}`);
+                const elementId = `${campo}${numero}`;
+                if (!document.getElementById(elementId)) return;
+                
+                let valor = document.getElementById(elementId).value.trim();
+                let errorSpan = document.getElementById(`error-${elementId}`);
                 
                 if (!valor) {
                     errorSpan.textContent = "Este campo es obligatorio";
@@ -161,37 +322,137 @@
                     errorSpan.textContent = "";
                 }
             });
+            
             return esValido;
         }
         
         function crearOferta() {
-            if (!validarFormulario()) return;
+            // Validar formulario(s)
+            const validoCartel1 = validarFormulario(1);
+            let validoCartel2 = true;
             
-            const nombre = document.getElementById("nombre").value;
-            const subtitulo = document.getElementById("subtitulo").value;
-            const codigo = document.getElementById("codigo").value;
-            const precioActual = document.getElementById("precioActual").value;
-            const precioAnterior = document.getElementById("precioAnterior").value;
+            if (modoActual === "diferente") {
+                validoCartel2 = validarFormulario(2);
+            }
+            
+            if (!validoCartel1 || !validoCartel2) return;
+            
+            // Generar cartel superior
+            generarCartel(1);
+            
+            // Generar cartel inferior
+            if (modoActual === "mismo") {
+                // Duplicar el cartel superior
+                document.getElementById("oferta2").innerHTML = document.getElementById("oferta1").innerHTML;
+            } else {
+                generarCartel(2);
+            }
+            
+            // Mostrar carteles y ocultar formulario
+            document.getElementById("formulario-container").style.display = "none";
+            document.getElementById("hoja-a4").style.display = "block";
+            document.getElementById("acciones-post").style.display = "flex";
+            
+            // Ajustar tamaño de texto
+            document.querySelectorAll(textoDinamico.join(', ')).forEach(adjustFontSize);
+        }
+        
+        function generarCartel(numero) {
+            const tipoCartel = document.getElementById(`tipoCartel${numero}`).value;
+            const nombre = document.getElementById(`nombre${numero}`).value;
+            const subtitulo = document.getElementById(`subtitulo${numero}`).value;
+            const codigo = document.getElementById(`codigo${numero}`).value;
+            const precioActual = document.getElementById(`precioActual${numero}`).value;
+            const precioAnterior = document.getElementById(`precioAnterior${numero}`).value;
+            
+            let tituloTexto = "OFERTA";
+            let promoHTML = "";
+            
+            // Configurar según el tipo de cartel
+            if (tipoCartel === "2x1") {
+                tituloTexto = "PROMO";
+                promoHTML = `<div class="promoInfo">¡2 X 1!</div>`;
+            } else if (tipoCartel === "mayorista") {
+                tituloTexto = "PROMO";
+                const cantidadMinima = document.getElementById(`cantidadMinima${numero}`).value;
+                const precioMayorista = document.getElementById(`precioMayorista${numero}`).value;
+                promoHTML = `<div class="promoInfo">Llevando ${cantidadMinima} o más: $${precioMayorista}</div>`;
+            }
             
             const ofertaHTML = `
-                <div class="titulo">OFERTA</div>
+                <div class="titulo">${tituloTexto}</div>
                 <div class="producto">${nombre}</div>
                 <div class="subtitulo">${subtitulo}</div>
                 <div class="precio">$${precioActual}</div>
+                ${promoHTML}
                 <div class="codigo-producto">Código: ${codigo}</div>
                 <div class="precioAnterior"> Antes:<span class="pa">$<s>${precioAnterior}</s></span></div>
             `;
             
-            document.getElementById("oferta").innerHTML = ofertaHTML;
-            document.getElementById("oferta-duplicada").innerHTML = ofertaHTML;
-            document.getElementById("formulario").style.display = "none";
-            document.getElementById("hoja-a4").style.display = "block";
-            document.getElementById("acciones").style.display = "block";
-            document.querySelectorAll(textoDinamico).forEach(adjustFontSize);
+            document.getElementById(`oferta${numero}`).innerHTML = ofertaHTML;
         }
         
         function imprimirOferta() {
             window.print();
+        }
+        
+        function editarCartelSuperior() {
+            mostrarFormularioEdicion(1);
+        }
+        
+        function editarCartelInferior() {
+            if (modoActual === "mismo") {
+                // Cambiamos a modo diferente para poder editar el cartel inferior por separado
+                document.querySelector('input[name="modo"][value="diferente"]').checked = true;
+                cambiarModo();
+                
+                // Copiamos los datos del cartel superior al inferior
+                const campos = ["nombre", "subtitulo", "codigo", "precioActual", "precioAnterior"];
+                campos.forEach(campo => {
+                    document.getElementById(`${campo}2`).value = document.getElementById(`${campo}1`).value;
+                });
+                
+                document.getElementById("tipoCartel2").value = document.getElementById("tipoCartel1").value;
+                cambiarTipoCartel(2);
+                
+                // Si es tipo mayorista copiamos esos campos también
+                if (document.getElementById("tipoCartel1").value === "mayorista") {
+                    document.getElementById("cantidadMinima2").value = document.getElementById("cantidadMinima1").value;
+                    document.getElementById("precioMayorista2").value = document.getElementById("precioMayorista1").value;
+                }
+            }
+            
+            mostrarFormularioEdicion(2);
+        }
+        
+        function mostrarFormularioEdicion(numero) {
+            document.getElementById("hoja-a4").style.display = "none";
+            document.getElementById("acciones-post").style.display = "none";
+            document.getElementById("formulario-container").style.display = "block";
+            
+            if (numero === 1) {
+                document.getElementById("formulario1").style.display = "flex";
+                if (modoActual === "diferente") {
+                    document.getElementById("formulario2").style.display = "none";
+                }
+            } else {
+                if (modoActual === "diferente") {
+                    document.getElementById("formulario1").style.display = "none";
+                    document.getElementById("formulario2").style.display = "flex";
+                }
+            }
+        }
+        
+        function volverAlFormulario() {
+            document.getElementById("hoja-a4").style.display = "none";
+            document.getElementById("acciones-post").style.display = "none";
+            document.getElementById("formulario-container").style.display = "block";
+            document.getElementById("formulario1").style.display = "flex";
+            if (modoActual === "diferente") {
+                document.getElementById("formulario2").style.display = "flex";
+            } else {
+                document.getElementById("formulario2").style.display = "none";
+            }
         }
     </script>
 </body>
